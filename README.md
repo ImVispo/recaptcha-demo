@@ -3,7 +3,7 @@ Test your V2 (one click), V3 (score), and invisible (one click) captcha.
 Demo site: https://captcha.vispo.dev/
 
 # Install
-This project uses (node)[https://nodejs.org/en/] and (npm)[https://www.npmjs.com/].
+This project uses [node](https://nodejs.org/en/) and [npm](https://www.npmjs.com/).
 ```
 npm i
 ```

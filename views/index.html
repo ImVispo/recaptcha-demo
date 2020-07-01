@@ -33,31 +33,34 @@
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://unpkg.com/tilt.js@1.2.1/dest/tilt.jquery.min.js"></script>
 <!-- v3 key -->
-<script src="https://www.google.com/recaptcha/api.js?render=YOUR_V3_KEY"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_V3_KEY "></script>
 <!-- invisible key -->
-<script src="https://www.google.com/recaptcha/api.js?render=YOUR_INVISIBLE_KEY"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_INVISIBLE_KEY "></script>
 <script type="text/javascript">
 
   const v2Key = ''
   const v3Key = ''
   const invisibleKey = ''
 
-    // v2
-    $('#v2').click(() => {
-      $('.captcha-box').empty();
-      $('.captcha-box').append(`<div id="recapv2"></div>`);
-      grecaptcha.render('recapv2', {
-        'sitekey': v2Key,
-        'theme': 'dark'
-      });
+  // v2
+  $('#v2').click(() => {
+    $('.captcha-box').empty();
+    $('.captcha-box').append(`<div id="recapv2"></div>`);
+    grecaptcha.render('recapv2', {
+      'sitekey': v2Key,
+      'theme': 'dark'
     });
+  });
 
   // v3
   $('#v3').click((e) => {
+    if (window.processing) return
+    window.processing = true
     e.preventDefault();
     $('.captcha-box').empty();
+    $('.captcha-box').append(`<p class="v3-response">Processing your v3 score...</p>`)
     grecaptcha.ready(() => {
-      grecaptcha.execute(v3Key, { action: 'submit' }).then((token) => {
+      grecaptcha.execute(v3Key, { action: 'homepage' }).then((token) => {
         fetch('/api/verify', {
           method: 'POST',
           headers: {
@@ -67,12 +70,14 @@
             token
           })
         }).then((res) => {
+          window.processing = false
+          $('.captcha-box').empty();
           if (res.ok) {
             res.json().then((result) => {
               $('.captcha-box').append(`<p class="v3-response">${JSON.stringify(result)}</p>`)
             })
           } else {
-            $('.captcha-box').append(`<p class="v3-response">An error has occurred.</p>`)
+            $('.captcha-box').append(`<p class="v3-response error">You are being rate limited. Please try again in 30 seconds.</p>`)
           }
         })
       });
@@ -84,10 +89,11 @@
     $('.captcha-box').empty();
     $('.captcha-box').append(`<div class="g-recaptcha"
       data-sitekey="${invisibleKey}"
-      data-callback="onSubmit"
+      data-callback="recaptcha_callback"
       data-size="invisible">
 </div>`);
-    grecaptcha.execute(invisibleKey);
+    grecaptcha.execute(invisibleKey)
+    $('.captcha-box').append(`<p class="v3-response">Tested Invisible reCAPTCHA. If no captcha popped up, you got a one-click.</p>`)
   });
 
 </script>
