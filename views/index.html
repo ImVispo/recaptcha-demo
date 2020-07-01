@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+  <title>Recaptcha Test</title>
+</head>
+
+<body class="modal-active">
+  <div class="container">
+    <div class="boxes">
+      <div class="box" id="v2" data-tilt>
+        <p>Recaptcha</p>
+        <p>V2</p>
+      </div>
+      <div class="box" id="v3" data-tilt>
+        <p>Recaptcha</p>
+        <p>V3</p>
+      </div>
+      <div class="box" id="invisible" data-tilt>
+        <p>Recaptcha</p>
+        <p>Invisible</p>
+      </div>
+    </div>
+    <div class="captcha-box">
+
+    </div>
+  </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://unpkg.com/tilt.js@1.2.1/dest/tilt.jquery.min.js"></script>
+<!-- v3 key -->
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_V3_KEY"></script>
+<!-- invisible key -->
+<script src="https://www.google.com/recaptcha/api.js?render=YOUR_INVISIBLE_KEY"></script>
+<script type="text/javascript">
+
+  const v2Key = ''
+  const v3Key = ''
+  const invisibleKey = ''
+
+    // v2
+    $('#v2').click(() => {
+      $('.captcha-box').empty();
+      $('.captcha-box').append(`<div id="recapv2"></div>`);
+      grecaptcha.render('recapv2', {
+        'sitekey': v2Key,
+        'theme': 'dark'
+      });
+    });
+
+  // v3
+  $('#v3').click((e) => {
+    e.preventDefault();
+    $('.captcha-box').empty();
+    grecaptcha.ready(() => {
+      grecaptcha.execute(v3Key, { action: 'submit' }).then((token) => {
+        fetch('/api/verify', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            token
+          })
+        }).then((res) => {
+          if (res.ok) {
+            res.json().then((result) => {
+              $('.captcha-box').append(`<p class="v3-response">${JSON.stringify(result)}</p>`)
+            })
+          } else {
+            $('.captcha-box').append(`<p class="v3-response">An error has occurred.</p>`)
+          }
+        })
+      });
+    });
+  });
+
+  // invisible
+  $('#invisible').click(() => {
+    $('.captcha-box').empty();
+    $('.captcha-box').append(`<div class="g-recaptcha"
+      data-sitekey="${invisibleKey}"
+      data-callback="onSubmit"
+      data-size="invisible">
+</div>`);
+    grecaptcha.execute(invisibleKey);
+  });
+
+</script>
+
+</html>
